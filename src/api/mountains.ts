@@ -63,6 +63,7 @@ export async function getMountains(): Promise<MountainListItem[]> {
   const { data, error } = await supabase
     .from("mountains")
     .select("id, slug, name, elevation, lat, lng, provinces(name)")
+    .eq("publication_status", "published")
     .order("name");
 
   if (error) throw new Error(`Failed to fetch mountains: ${error.message}`);
