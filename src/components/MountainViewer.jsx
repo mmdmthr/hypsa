@@ -5,27 +5,63 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { supabase } from "../lib/supabase";
 
-export default function MountainViewer({ slug, bbox }) {
+export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [allRoutes, setAllRoutes] = useState(routes || []);
+  const [selectedRouteSlug, setSelectedRouteSlug] = useState(
+    routes && routes.length > 0 ? routes[0].slug : null
+  );
+
+  // Refs to preserve scene objects across re-renders
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const controlsRef = useRef(null);
+  const terrainTextureRef = useRef(null);
+  const heightmapDataRef = useRef(null);
+  const imageDimensionsRef = useRef(null);
+  const routeLineRef = useRef(null);
+
   const imagePath = `/heightmaps/${slug}_heightmap.png`;
   const texturePath = `/textures/${slug}_satellite.jpg`;
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
 
-  const route =
-    params.get("route") ||
-    "mangli";
+  // Fetch routes on client side if not provided from server
+  useEffect(() => {
+    if (allRoutes.length > 0) return; // Already have routes from server
+    
+    if (!mountainId) {
+      console.warn("[MountainViewer] No mountainId provided, cannot fetch routes");
+      return;
+    }
 
-  function latLonToScene(
-    lat,
-    lon,
-    bbox,
-    terrainWidth,
-    terrainHeight,
-  ) {
+    const fetchRoutes = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("hiking_routes_geojson")
+          .select("id, mountain_id, name, slug")
+          .eq("mountain_id", mountainId)
+          .order("name");
+
+        if (error) {
+          console.error("[MountainViewer] Route fetch error:", error.message);
+        } else if (data) {
+          console.log(`[MountainViewer] Fetched ${data.length} routes for mountain ${mountainId}`);
+          setAllRoutes(data);
+          if (data.length > 0 && !selectedRouteSlug) {
+            setSelectedRouteSlug(data[0].slug);
+          }
+        }
+      } catch (err) {
+        console.error("[MountainViewer] Route fetch exception:", err);
+      }
+    };
+
+    fetchRoutes();
+  }, [mountainId]);
+
+  function latLonToScene(lat, lon, bbox, terrainWidth, terrainHeight) {
     const x =
       ((lon - bbox.west) /
         (bbox.east - bbox.west))
@@ -41,20 +77,20 @@ export default function MountainViewer({ slug, bbox }) {
     return { x, z };
   }
 
+  // Initialize terrain and scene (runs once)
   useEffect(() => {
     const container = containerRef.current;
 
     if (!container) return;
 
     const scene = new THREE.Scene();
-
     scene.background = new THREE.Color(0xe5e7eb);
 
     const camera = new THREE.PerspectiveCamera(
       75,
       container.clientWidth / container.clientHeight,
       0.1,
-      1000,
+      1000
     );
 
     camera.position.set(0, 20, 120);
@@ -64,31 +100,31 @@ export default function MountainViewer({ slug, bbox }) {
     });
 
     renderer.setSize(container.clientWidth, container.clientHeight);
-
     container.appendChild(renderer.domElement);
 
     // controls
     const controls = new OrbitControls(camera, renderer.domElement);
-
     controls.enableDamping = true;
 
     // lights
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-
     directionalLight.position.set(50, 100, 50);
-
     scene.add(directionalLight);
 
-    // heightmap
-    const img = new Image();
+    // Store refs for later use
+    sceneRef.current = scene;
+    cameraRef.current = camera;
+    rendererRef.current = renderer;
+    controlsRef.current = controls;
 
+    // Load heightmap and create terrain
+    const img = new Image();
     img.src = imagePath;
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
-
       const ctx = canvas.getContext("2d");
 
       canvas.width = img.width;
@@ -97,20 +133,21 @@ export default function MountainViewer({ slug, bbox }) {
       ctx.drawImage(img, 0, 0);
 
       const imageData = ctx.getImageData(0, 0, img.width, img.height);
-
       const data = imageData.data;
 
+      // Store heightmap data for route height sampling
+      heightmapDataRef.current = data;
+      imageDimensionsRef.current = { width: img.width, height: img.height };
+
       const aspect = img.width / img.height;
-
       const terrainWidth = 200;
-
       const terrainHeight = terrainWidth / aspect;
 
       const geometry = new THREE.PlaneGeometry(
         terrainWidth,
         terrainHeight,
         img.width - 1,
-        img.height - 1,
+        img.height - 1
       );
 
       geometry.rotateX(-Math.PI / 2);
@@ -120,138 +157,52 @@ export default function MountainViewer({ slug, bbox }) {
       for (let z = 0; z < img.height; z++) {
         for (let x = 0; x < img.width; x++) {
           const pixelIndex = (z * img.width + x) * 4;
-
           const brightness = data[pixelIndex];
-
           const height = brightness * 0.15;
 
           const vertexIndex = z * img.width + x;
-
           vertices.setY(vertexIndex, height);
         }
       }
 
       vertices.needsUpdate = true;
-
       geometry.computeVertexNormals();
 
-      const textureLoader =
-        new THREE.TextureLoader();
-
-      const terrainTexture =
-        textureLoader.load(
-          texturePath
-        );
+      const textureLoader = new THREE.TextureLoader();
+      const terrainTexture = textureLoader.load(texturePath);
+      terrainTextureRef.current = terrainTexture;
 
       const material = new THREE.MeshStandardMaterial({
         map: terrainTexture,
       });
 
       const terrain = new THREE.Mesh(geometry, material);
-
-      async function loadRoute() {
-        const { data: routeData, error } =
-          await supabase
-            .from("hiking_routes_geojson")
-            .select("*")
-            .eq("slug", route)
-            .single();
-
-        if (error || !routeData) return;
-
-        const geometry = routeData.geometry;
-
-        if (
-          !geometry ||
-          geometry.type !== "LineString"
-        ) {
-          return;
-        }
-
-        const points = [];
-
-        geometry.coordinates.forEach(
-          (coord) => {
-            const lon = coord[0];
-            const lat = coord[1];
-
-            const { x, z } =
-              latLonToScene(
-                lat,
-                lon,
-                bbox,
-                terrainWidth,
-                terrainHeight,
-              );
-
-            const px = Math.floor(
-              ((lon - bbox.west) /
-                (bbox.east - bbox.west))
-              * img.width
-            );
-
-            const pz = Math.floor(
-              ((bbox.north - lat) /
-                (bbox.north - bbox.south))
-              * img.height
-            );
-
-            const pixelIndex =
-              (pz * img.width + px) * 4;
-
-            const brightness =
-              data[pixelIndex];
-
-            const y =
-              brightness * 0.15;
-
-            points.push(
-              new THREE.Vector3(
-                x,
-                y + 0.15,
-                z,
-              ),
-            );
-          },
-        );
-
-        const lineGeometry =
-          new THREE.BufferGeometry()
-            .setFromPoints(points);
-
-        const lineMaterial =
-          new THREE.LineBasicMaterial({
-            color: 0xff0000,
-          });
-
-        const line = new THREE.Line(
-          lineGeometry,
-          lineMaterial,
-        );
-
-        scene.add(line);
-      }
-
       scene.add(terrain);
-      loadRoute();
-      setIsLoading(false);
+
+      // Load the initial route if available
+      if (selectedRouteSlug) {
+        loadRouteData(selectedRouteSlug, terrainWidth, terrainHeight);
+      } else {
+        setIsLoading(false);
+      }
 
       animate();
     };
 
+    img.onerror = () => {
+      console.warn("[MountainViewer] Failed to load heightmap");
+      setIsLoading(false);
+    };
+
     function animate() {
       requestAnimationFrame(animate);
-
       controls.update();
-
       renderer.render(scene, camera);
     }
 
     const handleResize = () => {
       camera.aspect = container.clientWidth / container.clientHeight;
-
       camera.updateProjectionMatrix();
-
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
 
@@ -259,22 +210,163 @@ export default function MountainViewer({ slug, bbox }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-
       renderer.dispose();
-
       container.innerHTML = "";
     };
-  }, [imagePath, texturePath, slug, route, bbox]);
+  }, [imagePath, texturePath]); // Only depends on heightmap and texture paths
+
+  // Load route data and render it
+  async function loadRouteData(routeSlug, terrainWidth, terrainHeight) {
+    if (!routeSlug || !mountainId) return;
+
+    setIsLoadingRoute(true);
+
+    try {
+      const { data: routeData, error } = await supabase
+        .from("hiking_routes_geojson")
+        .select("*")
+        .eq("mountain_id", mountainId)
+        .eq("slug", routeSlug)
+        .single();
+
+      if (error || !routeData) {
+        console.warn("[MountainViewer] Could not load route:", error);
+        setIsLoadingRoute(false);
+        return;
+      }
+
+      const geometry = routeData.geometry;
+
+      if (!geometry || geometry.type !== "LineString") {
+        console.warn("[MountainViewer] Invalid geometry type");
+        setIsLoadingRoute(false);
+        return;
+      }
+
+      // Remove previous route line
+      if (routeLineRef.current && sceneRef.current) {
+        sceneRef.current.remove(routeLineRef.current);
+        routeLineRef.current = null;
+      }
+
+      // Generate new route line
+      const points = [];
+      const heightmapData = heightmapDataRef.current;
+      const imageDimensions = imageDimensionsRef.current;
+
+      geometry.coordinates.forEach((coord) => {
+        const lon = coord[0];
+        const lat = coord[1];
+
+        const { x, z } = latLonToScene(
+          lat,
+          lon,
+          bbox,
+          terrainWidth,
+          terrainHeight
+        );
+
+        // Sample height from heightmap
+        const px = Math.floor(
+          ((lon - bbox.west) / (bbox.east - bbox.west)) * imageDimensions.width
+        );
+
+        const pz = Math.floor(
+          ((bbox.north - lat) / (bbox.north - bbox.south)) * imageDimensions.height
+        );
+
+        const pixelIndex = (pz * imageDimensions.width + px) * 4;
+        const brightness = heightmapData[pixelIndex];
+        const y = brightness * 0.15;
+
+        points.push(new THREE.Vector3(x, y + 0.15, z));
+      });
+
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xff0000,
+        linewidth: 2,
+      });
+
+      const line = new THREE.Line(lineGeometry, lineMaterial);
+      sceneRef.current.add(line);
+      routeLineRef.current = line;
+
+      setIsLoadingRoute(false);
+      if (isLoading) {
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.warn("[MountainViewer] Error loading route:", err);
+      setIsLoadingRoute(false);
+    }
+  }
+
+  // Handle route change
+  useEffect(() => {
+    if (!sceneRef.current) return; // Scene not yet initialized
+
+    if (selectedRouteSlug && mountainId) {
+      const terrainWidth = 200;
+      const aspect = imageDimensionsRef.current
+        ? imageDimensionsRef.current.width / imageDimensionsRef.current.height
+        : 1;
+      const terrainHeight = terrainWidth / aspect;
+
+      loadRouteData(selectedRouteSlug, terrainWidth, terrainHeight);
+    }
+  }, [selectedRouteSlug]);
+
+  const handleRouteChange = (e) => {
+    setSelectedRouteSlug(e.target.value);
+  };
+
+  const hasRoutes = allRoutes && allRoutes.length > 0;
 
   return (
-    <div className="relative w-full h-[80vh]">
-      {isLoading && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 animate-pulse rounded">
-          <div className="w-16 h-16 rounded-full border-4 border-teal-400 border-t-transparent animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat terrain 3D…</p>
+    <div className="w-full">
+      {/* Route Selector */}
+      {hasRoutes ? (
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
+          <label htmlFor="route-select" className="font-medium text-gray-700 dark:text-gray-300">
+            Jalur:
+          </label>
+          <select
+            id="route-select"
+            value={selectedRouteSlug || ""}
+            onChange={handleRouteChange}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
+          >
+            {allRoutes.map((route) => (
+              <option key={route.slug} value={route.slug}>
+                {route.name}
+              </option>
+            ))}
+          </select>
+          {isLoadingRoute && (
+            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+              Memuat jalur…
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-4 text-amber-800 dark:text-amber-200">
+          Belum ada jalur pendakian tersedia.
         </div>
       )}
-      <div ref={containerRef} className="w-full h-full" />
+
+      {/* 3D Viewer Container */}
+      <div className="relative" style={{ height: "calc(100vh - 200px)" }}>
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 animate-pulse rounded">
+            <div className="w-16 h-16 rounded-full border-4 border-teal-400 border-t-transparent animate-spin" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Memuat terrain 3D…
+            </p>
+          </div>
+        )}
+        <div ref={containerRef} className="w-full h-full" />
+      </div>
     </div>
   );
 }

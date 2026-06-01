@@ -7,6 +7,7 @@ import MainLayout from "../../layouts/MainLayout.astro";
 import MountainViewer from "../../components/MountainViewer.jsx";
 import type { Mountain } from "../../api/mountains";
 import { getAllMountains } from "../../api/mountains";
+import { supabase } from "../../lib/supabase";
 
 // Explicitly mark as statically pre-rendered (important when using Netlify SSR adapter)
 export const prerender = true;
@@ -50,6 +51,28 @@ const { mountain } = Astro.props as { mountain: Mountain | null };
 
 if (!mountain) {
     return Astro.redirect("/404");
+}
+
+// Fetch all routes for this mountain
+let routes: Array<{ id: string; mountain_id: string; name: string; slug: string }> = [];
+try {
+    console.log(mountain)
+    if (mountain?.id) {
+        const { data: allRoutes, error } = await supabase
+            .from("hiking_routes_geojson")
+            .select("id, mountain_id, name, slug")
+            .eq("mountain_id", mountain.id)
+            .order("name");
+        
+        if (error) {
+            console.warn(`[mountains/[slug]] Route query error:`, error.message);
+        } else if (allRoutes) {
+            console.log(`[mountains/[slug]] Found ${allRoutes.length} routes for mountain.id=${mountain.id}`);
+            routes = allRoutes;
+        }
+    }
+} catch (err) {
+    console.warn("[mountains/[slug]] Route fetch exception:", err);
 }
 
 // Check if a heightmap exists for the 3D viewer
@@ -154,7 +177,7 @@ const bbox = hasBbox
     {
         hasHeightmap && (
             <div class="w-full" style="height: 60vh;">
-                <MountainViewer client:only slug={slug} bbox={bbox} />
+                <MountainViewer client:only slug={slug} bbox={bbox} mountainId={mountain.id} routes={routes} />
             </div>
         )
     }
