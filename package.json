@@ -14,7 +14,6 @@
     "@astrojs/react": "^4.3.0",
     "@supabase/supabase-js": "^2.106.2",
     "@tailwindcss/vite": "^4.1.8",
-    "@tmcw/togeojson": "^7.1.2",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "astro": "^5.8.0",

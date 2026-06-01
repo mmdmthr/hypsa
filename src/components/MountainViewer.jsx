@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import * as THREE from "three";
-import * as toGeoJSON from "@tmcw/togeojson";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { supabase } from "../lib/supabase";
 
 export default function MountainViewer({ slug, bbox }) {
   const containerRef = useRef(null);
@@ -18,7 +18,6 @@ export default function MountainViewer({ slug, bbox }) {
   const route =
     params.get("route") ||
     "mangli";
-  const gpxPath = `/gpx/${slug}/${route}.gpx`;
 
   function latLonToScene(
     lat,
@@ -150,37 +149,31 @@ export default function MountainViewer({ slug, bbox }) {
 
       const terrain = new THREE.Mesh(geometry, material);
 
-      async function loadGPX() {
-        const response = await fetch(gpxPath);
+      async function loadRoute() {
+        const { data: routeData, error } =
+          await supabase
+            .from("hiking_routes_geojson")
+            .select("*")
+            .eq("slug", route)
+            .single();
 
-        const text = await response.text();
+        if (error || !routeData) return;
 
-        const parser = new DOMParser();
+        const geometry = routeData.geometry;
 
-        const xml = parser.parseFromString(
-          text,
-          "application/xml",
-        );
-
-        const geojson =
-          toGeoJSON.gpx(xml);
-
-        const track =
-          geojson.features.find(
-            (f) =>
-              f.geometry.type ===
-              "LineString",
-          );
-
-        if (!track) return;
+        if (
+          !geometry ||
+          geometry.type !== "LineString"
+        ) {
+          return;
+        }
 
         const points = [];
 
-        track.geometry.coordinates.forEach(
+        geometry.coordinates.forEach(
           (coord) => {
             const lon = coord[0];
             const lat = coord[1];
-            const ele = coord[2] || 0;
 
             const { x, z } =
               latLonToScene(
@@ -240,7 +233,7 @@ export default function MountainViewer({ slug, bbox }) {
       }
 
       scene.add(terrain);
-      loadGPX();
+      loadRoute();
       setIsLoading(false);
 
       animate();
@@ -271,7 +264,7 @@ export default function MountainViewer({ slug, bbox }) {
 
       container.innerHTML = "";
     };
-  }, [imagePath, texturePath, gpxPath, bbox]);
+  }, [imagePath, texturePath, slug, route, bbox]);
 
   return (
     <div className="relative w-full h-[80vh]">
