@@ -5,6 +5,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { supabase } from "../lib/supabase";
 import { getWaypointsByRoute } from "../api/waypoints";
+import {
+  createWaypointGroup,
+  renderWaypoints,
+  clearWaypoints,
+  disposeWaypointContext,
+} from "../lib/rendering/waypointRenderer";
 
 export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const containerRef = useRef(null);
@@ -29,6 +35,8 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const heightmapDataRef = useRef(null);
   const imageDimensionsRef = useRef(null);
   const routeLineRef = useRef(null);
+  const waypointGroupRef = useRef(null);
+  const waypointContextRef = useRef(null);
 
   const imagePath = `/heightmaps/${slug}_heightmap.png`;
   const texturePath = `/textures/${slug}_satellite.jpg`;
@@ -119,11 +127,17 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
     directionalLight.position.set(50, 100, 50);
     scene.add(directionalLight);
 
+    // waypoint group for markers
+    const waypointContext = createWaypointGroup();
+    scene.add(waypointContext.group);
+
     // Store refs for later use
     sceneRef.current = scene;
     cameraRef.current = camera;
     rendererRef.current = renderer;
     controlsRef.current = controls;
+    waypointGroupRef.current = waypointContext.group;
+    waypointContextRef.current = waypointContext;
 
     // Load heightmap and create terrain
     const img = new Image();
@@ -216,6 +230,9 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      if (waypointContextRef.current) {
+        disposeWaypointContext(waypointContextRef.current);
+      }
       renderer.dispose();
       container.innerHTML = "";
     };
@@ -352,6 +369,37 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
 
     loadWaypoints();
   }, [selectedRouteSlug, allRoutes]);
+
+  // Render waypoint markers when waypoints data changes
+  useEffect(() => {
+    // Ensure scene and waypoint context are initialized
+    if (!sceneRef.current || !waypointContextRef.current) return;
+
+    // Ensure we have heightmap data
+    if (!heightmapDataRef.current || !imageDimensionsRef.current) return;
+
+    // If no waypoints, just clear existing markers
+    if (waypoints.length === 0) {
+      clearWaypoints(waypointContextRef.current);
+      return;
+    }
+
+    // Calculate terrain dimensions
+    const terrainWidth = 200;
+    const aspect = imageDimensionsRef.current.width / imageDimensionsRef.current.height;
+    const terrainHeight = terrainWidth / aspect;
+
+    // Render waypoints
+    renderWaypoints(
+      waypoints,
+      waypointContextRef.current,
+      bbox,
+      terrainWidth,
+      terrainHeight,
+      heightmapDataRef.current,
+      imageDimensionsRef.current
+    );
+  }, [waypoints, bbox]);
 
   const handleRouteChange = (e) => {
     setSelectedRouteSlug(e.target.value);
