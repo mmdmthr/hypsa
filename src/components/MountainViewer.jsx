@@ -4,6 +4,7 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { supabase } from "../lib/supabase";
+import { getWaypointsByRoute } from "../api/waypoints";
 
 export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const containerRef = useRef(null);
@@ -13,6 +14,11 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const [selectedRouteSlug, setSelectedRouteSlug] = useState(
     routes && routes.length > 0 ? routes[0].slug : null
   );
+
+    // Waypoints state
+    const [waypoints, setWaypoints] = useState([]);
+    const [isLoadingWaypoints, setIsLoadingWaypoints] = useState(false);
+    const [waypointsError, setWaypointsError] = useState(null);
 
   // Refs to preserve scene objects across re-renders
   const sceneRef = useRef(null);
@@ -317,6 +323,36 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
     }
   }, [selectedRouteSlug]);
 
+  // Load waypoints when selected route changes
+  useEffect(() => {
+    // Find the selected route object to get its ID
+    const selectedRoute = allRoutes.find((route) => route.slug === selectedRouteSlug);
+
+    if (!selectedRoute || !selectedRoute.id) {
+      setWaypoints([]);
+      setWaypointsError(null);
+      return;
+    }
+
+    const loadWaypoints = async () => {
+      setIsLoadingWaypoints(true);
+      setWaypointsError(null);
+
+      try {
+        const data = await getWaypointsByRoute(selectedRoute.id);
+        setWaypoints(data);
+      } catch (err) {
+        console.error("[MountainViewer] Error loading waypoints:", err);
+        setWaypointsError("Gagal memuat waypoint. Silakan coba lagi.");
+        setWaypoints([]);
+      } finally {
+        setIsLoadingWaypoints(false);
+      }
+    };
+
+    loadWaypoints();
+  }, [selectedRouteSlug, allRoutes]);
+
   const handleRouteChange = (e) => {
     setSelectedRouteSlug(e.target.value);
   };
@@ -366,6 +402,54 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
           </div>
         )}
         <div ref={containerRef} className="w-full h-full" />
+
+          {/* Waypoints Debug Panel */}
+          <div className="absolute bottom-4 left-4 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 max-h-64 w-64 overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Waypoint
+            </h3>
+
+            {isLoadingWaypoints && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Memuat waypoint…
+              </p>
+            )}
+
+            {waypointsError && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2 mb-3">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  {waypointsError}
+                </p>
+              </div>
+            )}
+
+            {!isLoadingWaypoints && waypoints.length === 0 && !waypointsError && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Tidak ada waypoint tersedia.
+              </p>
+            )}
+
+            {!isLoadingWaypoints && waypoints.length > 0 && (
+              <ul className="space-y-2">
+                {waypoints.map((waypoint) => (
+                  <li
+                    key={waypoint.id}
+                    className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 border-l-4 border-teal-500"
+                  >
+                    <div className="font-medium">{waypoint.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {waypoint.type} · {waypoint.sort_order}
+                    </div>
+                    {waypoint.elevation !== null && (
+                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                        {waypoint.elevation.toLocaleString("id-ID")} mdpl
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
       </div>
     </div>
   );

@@ -56,7 +56,6 @@ if (!mountain) {
 // Fetch all routes for this mountain
 let routes: Array<{ id: string; mountain_id: string; name: string; slug: string }> = [];
 try {
-    console.log(mountain)
     if (mountain?.id) {
         const { data: allRoutes, error } = await supabase
             .from("hiking_routes_geojson")
@@ -67,7 +66,6 @@ try {
         if (error) {
             console.warn(`[mountains/[slug]] Route query error:`, error.message);
         } else if (allRoutes) {
-            console.log(`[mountains/[slug]] Found ${allRoutes.length} routes for mountain.id=${mountain.id}`);
             routes = allRoutes;
         }
     }
