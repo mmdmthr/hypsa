@@ -39,6 +39,10 @@ const parser = new XMLParser({
 
 const gpx = parser.parse(xml);
 
+if (!gpx?.gpx?.trk?.trkseg) {
+  throw new Error("No track segments found in GPX");
+}
+
 // Support single or multiple segments
 const segments = Array.isArray(gpx.gpx.trk.trkseg)
   ? gpx.gpx.trk.trkseg
@@ -52,9 +56,24 @@ for (const segment of segments) {
     : [segment.trkpt];
 
   for (const point of trkpts) {
+    const lat = Number(point.lat);
+    const lon = Number(point.lon);
+    const ele = Number(point.ele);
+
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
+      throw new Error("Invalid coordinate found in GPX");
+    }
+
+    if (Number.isNaN(ele)) {
+      throw new Error(
+        `Missing elevation at point ${points.length + 1}`
+      );
+    }
+
     points.push({
-      lat: Number(point.lat),
-      lon: Number(point.lon),
+      lat,
+      lon,
+      ele,
     });
   }
 }
@@ -64,13 +83,16 @@ if (points.length < 2) {
 }
 
 // ----------------------
-// Build WKT
+// Build 3D WKT
 // ----------------------
 
 const wkt =
-  "LINESTRING(" +
+  "LINESTRING Z(" +
   points
-    .map((p) => `${p.lon} ${p.lat}`)
+    .map(
+      (p) =>
+        `${p.lon} ${p.lat} ${p.ele}`
+    )
     .join(",") +
   ")";
 
@@ -109,3 +131,11 @@ fs.writeFileSync(outputFile, sql);
 
 console.log(`Generated: ${outputFile}`);
 console.log(`Track points: ${points.length}`);
+console.log(
+  `Elevation range: ${Math.min(
+    ...points.map((p) => p.ele)
+  )}m - ${Math.max(
+    ...points.map((p) => p.ele)
+  )}m`
+);
+console.log("Geometry type: LINESTRING Z");
