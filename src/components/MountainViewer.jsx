@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { supabase } from "../lib/supabase";
-import { getWaypointsByRoute } from "../api/waypoints";
+import { getWaypointsByTrail } from "../api/waypoints";
 import {
   createWaypointGroup,
   renderWaypoints,
@@ -12,13 +12,13 @@ import {
   disposeWaypointContext,
 } from "../lib/rendering/waypointRenderer";
 
-export default function MountainViewer({ slug, bbox, mountainId, routes }) {
+export default function MountainViewer({ slug, bbox, mountainId, trails }) {
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
-  const [allRoutes, setAllRoutes] = useState(routes || []);
-  const [selectedRouteSlug, setSelectedRouteSlug] = useState(
-    routes && routes.length > 0 ? routes[0].slug : null
+  const [isLoadingTrail, setIsLoadingTrail] = useState(false);
+  const [allTrails, setAllTrails] = useState(trails || []);
+  const [selectedTrailSlug, setSelectedTrailSlug] = useState(
+    trails && trails.length > 0 ? trails[0].slug : null
   );
 
     // Waypoints state
@@ -34,45 +34,45 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
   const terrainTextureRef = useRef(null);
   const heightmapDataRef = useRef(null);
   const imageDimensionsRef = useRef(null);
-  const routeLineRef = useRef(null);
+  const trailLineRef = useRef(null);
   const waypointGroupRef = useRef(null);
   const waypointContextRef = useRef(null);
 
   const imagePath = `/heightmaps/${slug}_heightmap.png`;
   const texturePath = `/textures/${slug}_satellite.jpg`;
 
-  // Fetch routes on client side if not provided from server
+  // Fetch trails on client side if not provided from server
   useEffect(() => {
-    if (allRoutes.length > 0) return; // Already have routes from server
+    if (allTrails.length > 0) return; // Already have trails from server
     
     if (!mountainId) {
-      console.warn("[MountainViewer] No mountainId provided, cannot fetch routes");
+      console.warn("[MountainViewer] No mountainId provided, cannot fetch trails");
       return;
     }
 
-    const fetchRoutes = async () => {
+    const fetchTrails = async () => {
       try {
         const { data, error } = await supabase
-          .from("hiking_routes_geojson")
+          .from("trails_geojson")
           .select("id, mountain_id, name, slug")
           .eq("mountain_id", mountainId)
           .order("name");
 
         if (error) {
-          console.error("[MountainViewer] Route fetch error:", error.message);
+          console.error("[MountainViewer] Trail fetch error:", error.message);
         } else if (data) {
-          console.log(`[MountainViewer] Fetched ${data.length} routes for mountain ${mountainId}`);
-          setAllRoutes(data);
-          if (data.length > 0 && !selectedRouteSlug) {
-            setSelectedRouteSlug(data[0].slug);
+          console.log(`[MountainViewer] Fetched ${data.length} trails for mountain ${mountainId}`);
+          setAllTrails(data);
+          if (data.length > 0 && !selectedTrailSlug) {
+            setSelectedTrailSlug(data[0].slug);
           }
         }
       } catch (err) {
-        console.error("[MountainViewer] Route fetch exception:", err);
+        console.error("[MountainViewer] Trail fetch exception:", err);
       }
     };
 
-    fetchRoutes();
+    fetchTrails();
   }, [mountainId]);
 
   function latLonToScene(lat, lon, bbox, terrainWidth, terrainHeight) {
@@ -155,7 +155,7 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
       const imageData = ctx.getImageData(0, 0, img.width, img.height);
       const data = imageData.data;
 
-      // Store heightmap data for route height sampling
+      // Store heightmap data for trail height sampling
       heightmapDataRef.current = data;
       imageDimensionsRef.current = { width: img.width, height: img.height };
 
@@ -199,9 +199,9 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
       const terrain = new THREE.Mesh(geometry, material);
       scene.add(terrain);
 
-      // Load the initial route if available
-      if (selectedRouteSlug) {
-        loadRouteData(selectedRouteSlug, terrainWidth, terrainHeight);
+      // Load the initial trail if available
+      if (selectedTrailSlug) {
+        loadTrailData(selectedTrailSlug, terrainWidth, terrainHeight);
       } else {
         setIsLoading(false);
       }
@@ -238,41 +238,41 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
     };
   }, [imagePath, texturePath]); // Only depends on heightmap and texture paths
 
-  // Load route data and render it
-  async function loadRouteData(routeSlug, terrainWidth, terrainHeight) {
-    if (!routeSlug || !mountainId) return;
+  // Load trail data and render it
+  async function loadTrailData(trailSlug, terrainWidth, terrainHeight) {
+    if (!trailSlug || !mountainId) return;
 
-    setIsLoadingRoute(true);
+    setIsLoadingTrail(true);
 
     try {
-      const { data: routeData, error } = await supabase
-        .from("hiking_routes_geojson")
+      const { data: trailData, error } = await supabase
+        .from("trails_geojson")
         .select("*")
         .eq("mountain_id", mountainId)
-        .eq("slug", routeSlug)
+        .eq("slug", trailSlug)
         .single();
 
-      if (error || !routeData) {
-        console.warn("[MountainViewer] Could not load route:", error);
-        setIsLoadingRoute(false);
+      if (error || !trailData) {
+        console.warn("[MountainViewer] Could not load trail:", error);
+        setIsLoadingTrail(false);
         return;
       }
 
-      const geometry = routeData.geometry;
+      const geometry = trailData.geometry;
 
       if (!geometry || geometry.type !== "LineString") {
         console.warn("[MountainViewer] Invalid geometry type");
-        setIsLoadingRoute(false);
+        setIsLoadingTrail(false);
         return;
       }
 
-      // Remove previous route line
-      if (routeLineRef.current && sceneRef.current) {
-        sceneRef.current.remove(routeLineRef.current);
-        routeLineRef.current = null;
+      // Remove previous trail line
+      if (trailLineRef.current && sceneRef.current) {
+        sceneRef.current.remove(trailLineRef.current);
+        trailLineRef.current = null;
       }
 
-      // Generate new route line
+      // Generate new trail line
       const points = [];
       const heightmapData = heightmapDataRef.current;
       const imageDimensions = imageDimensionsRef.current;
@@ -313,39 +313,39 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
 
       const line = new THREE.Line(lineGeometry, lineMaterial);
       sceneRef.current.add(line);
-      routeLineRef.current = line;
+      trailLineRef.current = line;
 
-      setIsLoadingRoute(false);
+      setIsLoadingTrail(false);
       if (isLoading) {
         setIsLoading(false);
       }
     } catch (err) {
-      console.warn("[MountainViewer] Error loading route:", err);
-      setIsLoadingRoute(false);
+      console.warn("[MountainViewer] Error loading trail:", err);
+      setIsLoadingTrail(false);
     }
   }
 
-  // Handle route change
+  // Handle trail change
   useEffect(() => {
     if (!sceneRef.current) return; // Scene not yet initialized
 
-    if (selectedRouteSlug && mountainId) {
+    if (selectedTrailSlug && mountainId) {
       const terrainWidth = 200;
       const aspect = imageDimensionsRef.current
         ? imageDimensionsRef.current.width / imageDimensionsRef.current.height
         : 1;
       const terrainHeight = terrainWidth / aspect;
 
-      loadRouteData(selectedRouteSlug, terrainWidth, terrainHeight);
+      loadTrailData(selectedTrailSlug, terrainWidth, terrainHeight);
     }
-  }, [selectedRouteSlug]);
+  }, [selectedTrailSlug]);
 
-  // Load waypoints when selected route changes
+  // Load waypoints when selected trail changes
   useEffect(() => {
-    // Find the selected route object to get its ID
-    const selectedRoute = allRoutes.find((route) => route.slug === selectedRouteSlug);
+    // Find the selected trail object to get its ID
+    const selectedTrail = allTrails.find((trail) => trail.slug === selectedTrailSlug);
 
-    if (!selectedRoute || !selectedRoute.id) {
+    if (!selectedTrail || !selectedTrail.id) {
       setWaypoints([]);
       setWaypointsError(null);
       return;
@@ -356,7 +356,7 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
       setWaypointsError(null);
 
       try {
-        const data = await getWaypointsByRoute(selectedRoute.id);
+        const data = await getWaypointsByTrail(selectedTrail.id);
         setWaypoints(data);
       } catch (err) {
         console.error("[MountainViewer] Error loading waypoints:", err);
@@ -368,7 +368,7 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
     };
 
     loadWaypoints();
-  }, [selectedRouteSlug, allRoutes]);
+  }, [selectedTrailSlug, allTrails]);
 
   // Render waypoint markers when waypoints data changes
   useEffect(() => {
@@ -401,33 +401,33 @@ export default function MountainViewer({ slug, bbox, mountainId, routes }) {
     );
   }, [waypoints, bbox]);
 
-  const handleRouteChange = (e) => {
-    setSelectedRouteSlug(e.target.value);
+  const handleTrailChange = (e) => {
+    setSelectedTrailSlug(e.target.value);
   };
 
-  const hasRoutes = allRoutes && allRoutes.length > 0;
+  const hasTrails = allTrails && allTrails.length > 0;
 
   return (
     <div className="w-full">
-      {/* Route Selector */}
-      {hasRoutes ? (
+      {/* Trail Selector */}
+      {hasTrails ? (
         <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
-          <label htmlFor="route-select" className="font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="trail-select" className="font-medium text-gray-700 dark:text-gray-300">
             Jalur:
           </label>
           <select
-            id="route-select"
-            value={selectedRouteSlug || ""}
-            onChange={handleRouteChange}
+            id="trail-select"
+            value={selectedTrailSlug || ""}
+            onChange={handleTrailChange}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
           >
-            {allRoutes.map((route) => (
-              <option key={route.slug} value={route.slug}>
-                {route.name}
+            {allTrails.map((trail) => (
+              <option key={trail.slug} value={trail.slug}>
+                {trail.name}
               </option>
             ))}
           </select>
-          {isLoadingRoute && (
+          {isLoadingTrail && (
             <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
               Memuat jalur…
             </span>

@@ -82,7 +82,7 @@ const escapedWkt = wkt.replace(/'/g, "''");
 // ----------------------
 
 const sql = `
-INSERT INTO hiking_routes (
+INSERT INTO trails (
     mountain_id,
     name,
     slug,

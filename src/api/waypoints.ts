@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 
 export interface Waypoint {
   id: number;
-  route_id: number;
+  trail_id: number;
   name: string;
   type: string;
   sort_order: number;
@@ -19,25 +19,25 @@ export interface Waypoint {
 // --- API functions ---
 
 /**
- * Fetch all published waypoints for a given route, sorted by sort_order.
- * Reads from the hiking_route_waypoints_geojson view.
+ * Fetch all published waypoints for a given trail, sorted by sort_order.
+ * Reads from the trail_waypoints_geojson view.
  *
- * @param routeId - The ID of the hiking route
+ * @param trailId - The ID of the hiking trail
  * @returns Array of waypoints sorted by sort_order, or empty array on error
  */
-export async function getWaypointsByRoute(
-  routeId: number
+export async function getWaypointsByTrail(
+  trailId: number
 ): Promise<Waypoint[]> {
   const { data, error } = await supabase
-    .from("hiking_route_waypoints_geojson")
+    .from("trail_waypoints_geojson")
     .select("*")
-    .eq("route_id", routeId)
+    .eq("trail_id", trailId)
     .eq("publication_status", "published")
     .order("sort_order", { ascending: true });
 
   if (error) {
     console.error(
-      `[getWaypointsByRoute] Error fetching waypoints for route ${routeId}:`,
+      `[getWaypointsByTrail] Error fetching waypoints for trail ${trailId}:`,
       error.message
     );
     return [];

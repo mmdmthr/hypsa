@@ -87,7 +87,7 @@ export function createWaypointGroup(): WaypointRenderContext {
 }
 
 /**
- * Render waypoints for a given route
+ * Render waypoints for a given trail
  *
  * @param waypoints - Array of waypoints to render
  * @param context - Waypoint render context (group + markers map)
@@ -154,7 +154,7 @@ export function renderWaypoints(
 
 /**
  * Clear all waypoint markers and dispose geometries/materials
- * Prevents memory leaks when switching routes
+ * Prevents memory leaks when switching trails
  *
  * @param context - Waypoint render context
  */
