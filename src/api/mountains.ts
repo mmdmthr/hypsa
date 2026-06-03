@@ -48,6 +48,7 @@ export async function getAllMountains(): Promise<Mountain[]> {
   const { data, error } = await supabase
     .from("mountains")
     .select("*, provinces(name)")
+    .eq("publication_status", "published")
     .order("name");
 
   if (error) throw new Error(`Failed to fetch all mountains: ${error.message}`);
