@@ -1,7 +1,7 @@
 import {
     ResponsiveContainer,
-    LineChart,
-    Line,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     Tooltip,
@@ -62,7 +62,7 @@ export default function ElevationProfile({
     return (
         <div className={`${className} w-full`}>
             <ResponsiveContainer>
-                <LineChart
+                <AreaChart
                     data={data}
                     margin={{
                         top: 8,
@@ -98,14 +98,14 @@ export default function ElevationProfile({
                         content={<CustomTooltip />}
                     />
 
-                    <Line
+                    <Area
                         type="monotone"
                         dataKey="elevation_m"
                         strokeWidth={2}
                         dot={false}
                         isAnimationActive={false}
                     />
-                </LineChart>
+                </AreaChart>
             </ResponsiveContainer>
         </div>
     );
