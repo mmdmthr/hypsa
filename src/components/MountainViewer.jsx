@@ -15,8 +15,7 @@ import {
 export default function MountainViewer({
   slug,
   bbox,
-  mountainId,
-  trails,
+  selectedTrailId,
   selectedWaypointId,
   onWaypointsLoaded,
   onWaypointsLoadingChange,
@@ -24,22 +23,22 @@ export default function MountainViewer({
 }) {
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingTrail, setIsLoadingTrail] = useState(false);
-  const [allTrails, setAllTrails] = useState(trails || []);
-  const [selectedTrailSlug, setSelectedTrailSlug] = useState(
-    trails && trails.length > 0 ? trails[0].slug : null
-  );
 
   // Waypoints state
   const [waypoints, setWaypoints] = useState([]);
   const [isLoadingWaypoints, setIsLoadingWaypoints] = useState(false);
   const [waypointsError, setWaypointsError] = useState(null);
 
-  // Keep callback refs stable so the Three.js click handler always calls the latest version
+  // Keep prop refs stable for use inside Three.js closures
   const onWaypointMarkerClickRef = useRef(onWaypointMarkerClick);
   useEffect(() => {
     onWaypointMarkerClickRef.current = onWaypointMarkerClick;
   }, [onWaypointMarkerClick]);
+
+  const selectedTrailIdRef = useRef(selectedTrailId);
+  useEffect(() => {
+    selectedTrailIdRef.current = selectedTrailId;
+  }, [selectedTrailId]);
 
   // Refs to preserve scene objects across re-renders
   const sceneRef = useRef(null);
@@ -55,40 +54,6 @@ export default function MountainViewer({
 
   const imagePath = `/heightmaps/${slug}_heightmap.png`;
   const texturePath = `/textures/${slug}_satellite.jpg`;
-
-  // Fetch trails on client side if not provided from server
-  useEffect(() => {
-    if (allTrails.length > 0) return; // Already have trails from server
-    
-    if (!mountainId) {
-      console.warn("[MountainViewer] No mountainId provided, cannot fetch trails");
-      return;
-    }
-
-    const fetchTrails = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("trails_geojson")
-          .select("id, mountain_id, name, slug")
-          .eq("mountain_id", mountainId)
-          .order("name");
-
-        if (error) {
-          console.error("[MountainViewer] Trail fetch error:", error.message);
-        } else if (data) {
-          console.log(`[MountainViewer] Fetched ${data.length} trails for mountain ${mountainId}`);
-          setAllTrails(data);
-          if (data.length > 0 && !selectedTrailSlug) {
-            setSelectedTrailSlug(data[0].slug);
-          }
-        }
-      } catch (err) {
-        console.error("[MountainViewer] Trail fetch exception:", err);
-      }
-    };
-
-    fetchTrails();
-  }, [mountainId]);
 
   function latLonToScene(lat, lon, bbox, terrainWidth, terrainHeight) {
     const x =
@@ -215,8 +180,8 @@ export default function MountainViewer({
       scene.add(terrain);
 
       // Load the initial trail if available
-      if (selectedTrailSlug) {
-        loadTrailData(selectedTrailSlug, terrainWidth, terrainHeight);
+      if (selectedTrailIdRef.current) {
+        loadTrailData(selectedTrailIdRef.current, terrainWidth, terrainHeight);
       } else {
         setIsLoading(false);
       }
@@ -291,22 +256,18 @@ export default function MountainViewer({
   }, [selectedWaypointId]);
 
   // Load trail data and render it
-  async function loadTrailData(trailSlug, terrainWidth, terrainHeight) {
-    if (!trailSlug || !mountainId) return;
-
-    setIsLoadingTrail(true);
+  async function loadTrailData(trailId, terrainWidth, terrainHeight) {
+    if (!trailId) return;
 
     try {
       const { data: trailData, error } = await supabase
         .from("trails_geojson")
         .select("*")
-        .eq("mountain_id", mountainId)
-        .eq("slug", trailSlug)
+        .eq("id", trailId)
         .single();
 
       if (error || !trailData) {
         console.warn("[MountainViewer] Could not load trail:", error);
-        setIsLoadingTrail(false);
         return;
       }
 
@@ -314,7 +275,6 @@ export default function MountainViewer({
 
       if (!geometry || geometry.type !== "LineString") {
         console.warn("[MountainViewer] Invalid geometry type");
-        setIsLoadingTrail(false);
         return;
       }
 
@@ -367,13 +327,11 @@ export default function MountainViewer({
       sceneRef.current.add(line);
       trailLineRef.current = line;
 
-      setIsLoadingTrail(false);
       if (isLoading) {
         setIsLoading(false);
       }
     } catch (err) {
       console.warn("[MountainViewer] Error loading trail:", err);
-      setIsLoadingTrail(false);
     }
   }
 
@@ -381,23 +339,20 @@ export default function MountainViewer({
   useEffect(() => {
     if (!sceneRef.current) return; // Scene not yet initialized
 
-    if (selectedTrailSlug && mountainId) {
+    if (selectedTrailId) {
       const terrainWidth = 200;
       const aspect = imageDimensionsRef.current
         ? imageDimensionsRef.current.width / imageDimensionsRef.current.height
         : 1;
       const terrainHeight = terrainWidth / aspect;
 
-      loadTrailData(selectedTrailSlug, terrainWidth, terrainHeight);
+      loadTrailData(selectedTrailId, terrainWidth, terrainHeight);
     }
-  }, [selectedTrailSlug]);
+  }, [selectedTrailId]);
 
   // Load waypoints when selected trail changes
   useEffect(() => {
-    // Find the selected trail object to get its ID
-    const selectedTrail = allTrails.find((trail) => trail.slug === selectedTrailSlug);
-
-    if (!selectedTrail || !selectedTrail.id) {
+    if (!selectedTrailId) {
       setWaypoints([]);
       setWaypointsError(null);
       return;
@@ -409,7 +364,7 @@ export default function MountainViewer({
       setWaypointsError(null);
 
       try {
-        const data = await getWaypointsByTrail(selectedTrail.id);
+        const data = await getWaypointsByTrail(Number(selectedTrailId));
         setWaypoints(data);
         onWaypointsLoaded?.(data);
       } catch (err) {
@@ -424,7 +379,7 @@ export default function MountainViewer({
     };
 
     loadWaypoints();
-  }, [selectedTrailSlug, allTrails]);
+  }, [selectedTrailId]);
 
   // Render waypoint markers when waypoints data changes
   useEffect(() => {
@@ -457,56 +412,17 @@ export default function MountainViewer({
     );
   }, [waypoints, bbox]);
 
-  const handleTrailChange = (e) => {
-    setSelectedTrailSlug(e.target.value);
-  };
-
-  const hasTrails = allTrails && allTrails.length > 0;
-
   return (
-    <div className="w-full h-full flex flex-col">
-      {/* Trail Selector */}
-      {hasTrails ? (
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 shrink-0">
-          <label htmlFor="trail-select" className="font-medium text-gray-700 dark:text-gray-300">
-            Jalur:
-          </label>
-          <select
-            id="trail-select"
-            value={selectedTrailSlug || ""}
-            onChange={handleTrailChange}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
-          >
-            {allTrails.map((trail) => (
-              <option key={trail.slug} value={trail.slug}>
-                {trail.name}
-              </option>
-            ))}
-          </select>
-          {isLoadingTrail && (
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-              Memuat jalur…
-            </span>
-          )}
-        </div>
-      ) : (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-4 text-amber-800 dark:text-amber-200 shrink-0">
-          Belum ada jalur pendakian tersedia.
+    <div className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 animate-pulse rounded">
+          <div className="w-16 h-16 rounded-full border-4 border-teal-400 border-t-transparent animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Memuat terrain 3D…
+          </p>
         </div>
       )}
-
-      {/* 3D Viewer Container */}
-      <div className="relative flex-1">
-        {isLoading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 animate-pulse rounded">
-            <div className="w-16 h-16 rounded-full border-4 border-teal-400 border-t-transparent animate-spin" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Memuat terrain 3D…
-            </p>
-          </div>
-        )}
-        <div ref={containerRef} className="w-full h-full" />
-      </div>
+      <div ref={containerRef} className="w-full h-full" />
     </div>
   );
 }
