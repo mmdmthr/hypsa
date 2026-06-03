@@ -3,7 +3,9 @@ import type { Waypoint } from "../api/waypoints";
 interface WaypointTimelineProps {
   waypoints: Waypoint[];
   selectedWaypointId: number | null;
+  hoveredWaypointId?: number | null;
   onWaypointSelect: (id: number) => void;
+  onWaypointHover?: (id: number | null) => void;
   isLoading?: boolean;
 }
 
@@ -20,7 +22,9 @@ const TYPE_LABELS: Record<string, string> = {
 export default function WaypointTimeline({
   waypoints,
   selectedWaypointId,
+  hoveredWaypointId,
   onWaypointSelect,
+  onWaypointHover,
   isLoading = false,
 }: WaypointTimelineProps) {
   return (
@@ -41,15 +45,20 @@ export default function WaypointTimeline({
         <div className="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1">
           {waypoints.map((wp) => {
             const isSelected = selectedWaypointId === wp.id;
+            const isHovered = hoveredWaypointId === wp.id;
             return (
               <button
                 key={wp.id}
                 onClick={() => onWaypointSelect(wp.id)}
+                onMouseEnter={() => onWaypointHover?.(wp.id)}
+                onMouseLeave={() => onWaypointHover?.(null)}
                 className={[
                   "w-full text-left px-3 py-2.5 rounded-lg transition-colors border",
                   isSelected
                     ? "bg-teal-500/20 border-teal-500/50"
-                    : "bg-slate-800 border-transparent hover:bg-slate-700",
+                    : isHovered
+                      ? "bg-slate-700 border-slate-600"
+                      : "bg-slate-800 border-transparent hover:bg-slate-700",
                 ].join(" ")}
               >
                 <p className="text-slate-100 text-sm font-medium leading-tight">

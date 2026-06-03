@@ -66,6 +66,7 @@ export default function MountainPageClient({
   );
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [selectedWaypointId, setSelectedWaypointId] = useState<number | null>(null);
+  const [hoveredWaypointId, setHoveredWaypointId] = useState<number | null>(null);
   const [isLoadingWaypoints, setIsLoadingWaypoints] = useState(false);
   const [profilePoints, setProfilePoints] = useState<ProfilePoint[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -75,6 +76,7 @@ export default function MountainPageClient({
     setSelectedTrailId(trailId);
     setWaypoints([]);
     setSelectedWaypointId(null);
+    setHoveredWaypointId(null);
     setHoveredProfilePoint(null);
   }, []);
 
@@ -216,7 +218,9 @@ export default function MountainPageClient({
           <WaypointTimeline
             waypoints={waypoints}
             selectedWaypointId={selectedWaypointId}
+            hoveredWaypointId={hoveredWaypointId}
             onWaypointSelect={handleWaypointTimelineSelect}
+            onWaypointHover={setHoveredWaypointId}
             isLoading={isLoadingWaypoints}
           />
         </div>
@@ -280,8 +284,13 @@ export default function MountainPageClient({
         ) : (
           <ElevationProfile
             data={profilePoints}
+            waypoints={waypoints}
+            selectedWaypointId={selectedWaypointId}
+            hoveredWaypointId={hoveredWaypointId}
             className="h-[360px]"
             onHover={(point) => setHoveredProfilePoint(point)}
+            onWaypointHover={setHoveredWaypointId}
+            onWaypointSelect={setSelectedWaypointId}
           />
         )}
       </div>
