@@ -12,7 +12,16 @@ import {
   disposeWaypointContext,
 } from "../lib/rendering/waypointRenderer";
 
-export default function MountainViewer({ slug, bbox, mountainId, trails }) {
+export default function MountainViewer({
+  slug,
+  bbox,
+  mountainId,
+  trails,
+  selectedWaypointId,
+  onWaypointsLoaded,
+  onWaypointsLoadingChange,
+  onWaypointMarkerClick,
+}) {
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTrail, setIsLoadingTrail] = useState(false);
@@ -21,10 +30,16 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
     trails && trails.length > 0 ? trails[0].slug : null
   );
 
-    // Waypoints state
-    const [waypoints, setWaypoints] = useState([]);
-    const [isLoadingWaypoints, setIsLoadingWaypoints] = useState(false);
-    const [waypointsError, setWaypointsError] = useState(null);
+  // Waypoints state
+  const [waypoints, setWaypoints] = useState([]);
+  const [isLoadingWaypoints, setIsLoadingWaypoints] = useState(false);
+  const [waypointsError, setWaypointsError] = useState(null);
+
+  // Keep callback refs stable so the Three.js click handler always calls the latest version
+  const onWaypointMarkerClickRef = useRef(onWaypointMarkerClick);
+  useEffect(() => {
+    onWaypointMarkerClickRef.current = onWaypointMarkerClick;
+  }, [onWaypointMarkerClick]);
 
   // Refs to preserve scene objects across re-renders
   const sceneRef = useRef(null);
@@ -228,8 +243,35 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
 
     window.addEventListener("resize", handleResize);
 
+    // Raycasting: detect clicks on waypoint markers
+    const raycaster = new THREE.Raycaster();
+    const handleMarkerClick = (event) => {
+      if (!waypointContextRef.current) return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      const mouse = new THREE.Vector2(
+        ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        -((event.clientY - rect.top) / rect.height) * 2 + 1
+      );
+      raycaster.setFromCamera(mouse, camera);
+      const meshes = [...waypointContextRef.current.markers.values()].map(
+        (m) => m.mesh
+      );
+      const intersects = raycaster.intersectObjects(meshes);
+      if (intersects.length > 0) {
+        const clickedMesh = intersects[0].object;
+        for (const [id, data] of waypointContextRef.current.markers.entries()) {
+          if (data.mesh === clickedMesh) {
+            onWaypointMarkerClickRef.current?.(id);
+            break;
+          }
+        }
+      }
+    };
+    renderer.domElement.addEventListener("click", handleMarkerClick);
+
     return () => {
       window.removeEventListener("resize", handleResize);
+      renderer.domElement.removeEventListener("click", handleMarkerClick);
       if (waypointContextRef.current) {
         disposeWaypointContext(waypointContextRef.current);
       }
@@ -237,6 +279,16 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
       container.innerHTML = "";
     };
   }, [imagePath, texturePath]); // Only depends on heightmap and texture paths
+
+  // Focus camera on selected waypoint when selectedWaypointId changes
+  useEffect(() => {
+    if (selectedWaypointId == null || !waypointContextRef.current || !controlsRef.current)
+      return;
+    const marker = waypointContextRef.current.markers.get(selectedWaypointId);
+    if (!marker) return;
+    controlsRef.current.target.copy(marker.mesh.position);
+    controlsRef.current.update();
+  }, [selectedWaypointId]);
 
   // Load trail data and render it
   async function loadTrailData(trailSlug, terrainWidth, terrainHeight) {
@@ -353,17 +405,21 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
 
     const loadWaypoints = async () => {
       setIsLoadingWaypoints(true);
+      onWaypointsLoadingChange?.(true);
       setWaypointsError(null);
 
       try {
         const data = await getWaypointsByTrail(selectedTrail.id);
         setWaypoints(data);
+        onWaypointsLoaded?.(data);
       } catch (err) {
         console.error("[MountainViewer] Error loading waypoints:", err);
         setWaypointsError("Gagal memuat waypoint. Silakan coba lagi.");
         setWaypoints([]);
+        onWaypointsLoaded?.([]);
       } finally {
         setIsLoadingWaypoints(false);
+        onWaypointsLoadingChange?.(false);
       }
     };
 
@@ -408,10 +464,10 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
   const hasTrails = allTrails && allTrails.length > 0;
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       {/* Trail Selector */}
       {hasTrails ? (
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 shrink-0">
           <label htmlFor="trail-select" className="font-medium text-gray-700 dark:text-gray-300">
             Jalur:
           </label>
@@ -434,13 +490,13 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
           )}
         </div>
       ) : (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-4 text-amber-800 dark:text-amber-200">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-4 text-amber-800 dark:text-amber-200 shrink-0">
           Belum ada jalur pendakian tersedia.
         </div>
       )}
 
       {/* 3D Viewer Container */}
-      <div className="relative" style={{ height: "calc(100vh - 200px)" }}>
+      <div className="relative flex-1">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-200 dark:bg-gray-800 animate-pulse rounded">
             <div className="w-16 h-16 rounded-full border-4 border-teal-400 border-t-transparent animate-spin" />
@@ -450,54 +506,6 @@ export default function MountainViewer({ slug, bbox, mountainId, trails }) {
           </div>
         )}
         <div ref={containerRef} className="w-full h-full" />
-
-          {/* Waypoints Debug Panel */}
-          <div className="absolute bottom-4 left-4 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 max-h-64 w-64 overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Waypoint
-            </h3>
-
-            {isLoadingWaypoints && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Memuat waypoint…
-              </p>
-            )}
-
-            {waypointsError && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2 mb-3">
-                <p className="text-sm text-red-800 dark:text-red-200">
-                  {waypointsError}
-                </p>
-              </div>
-            )}
-
-            {!isLoadingWaypoints && waypoints.length === 0 && !waypointsError && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Tidak ada waypoint tersedia.
-              </p>
-            )}
-
-            {!isLoadingWaypoints && waypoints.length > 0 && (
-              <ul className="space-y-2">
-                {waypoints.map((waypoint) => (
-                  <li
-                    key={waypoint.id}
-                    className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 border-l-4 border-teal-500"
-                  >
-                    <div className="font-medium">{waypoint.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {waypoint.type} · {waypoint.sort_order}
-                    </div>
-                    {waypoint.elevation !== null && (
-                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                        {waypoint.elevation.toLocaleString("id-ID")} mdpl
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
       </div>
     </div>
   );
