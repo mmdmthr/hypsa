@@ -78,7 +78,7 @@ export default function MountainViewer({
     if (!container) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xe5e7eb);
+    scene.background = new THREE.Color(0x020617);
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -101,9 +101,9 @@ export default function MountainViewer({
     controls.enableDamping = true;
 
     // lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(50, 100, 50);
     scene.add(directionalLight);
 
