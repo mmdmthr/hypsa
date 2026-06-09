@@ -1,12 +1,12 @@
 interface Trail {
-  id: string;
+  id: number;
   name: string;
 }
 
 interface TrailSelectorProps {
   trails: Trail[];
-  selectedTrailId: string | null;
-  onTrailChange: (trailId: string) => void;
+  selectedTrailId: number | null;
+  onTrailChange: (trailId: number) => void;
 }
 
 export default function TrailSelector({
@@ -35,7 +35,7 @@ export default function TrailSelector({
           <select
             id="trail-select"
             value={selectedTrailId ?? ""}
-            onChange={(e) => onTrailChange(e.target.value)}
+            onChange={(e) => onTrailChange(Number(e.target.value))}
             className="w-full appearance-none bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
           >
             {trails.map((trail) => (

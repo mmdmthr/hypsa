@@ -9,6 +9,7 @@ import {
     CartesianGrid,
     ReferenceDot,
 } from "recharts";
+import type { Waypoint } from "../api/waypoints";
 
 type ProfilePoint = {
     point_index: number;
@@ -16,18 +17,6 @@ type ProfilePoint = {
     elevation_m: number;
     longitude: number;
     latitude: number;
-};
-
-type Waypoint = {
-    id: number;
-    name: string;
-    type: string;
-    elevation: number | null;
-    sort_order: number;
-    geometry: {
-        type: "Point";
-        coordinates: [number, number]; // [longitude, latitude]
-    };
 };
 
 type ProfileWaypoint = {

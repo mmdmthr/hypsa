@@ -33,8 +33,8 @@ function haversineMeters(
 }
 
 interface Trail {
-  id: string;
-  mountain_id: string;
+  id: number;
+  mountain_id: number;
   name: string;
   slug: string;
 }
@@ -61,7 +61,7 @@ export default function MountainPageClient({
   trails,
   hasHeightmap,
 }: MountainPageClientProps) {
-  const [selectedTrailId, setSelectedTrailId] = useState<string | null>(
+  const [selectedTrailId, setSelectedTrailId] = useState<number | null>(
     trails.length > 0 ? trails[0].id : null
   );
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
@@ -72,7 +72,7 @@ export default function MountainPageClient({
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [hoveredProfilePoint, setHoveredProfilePoint] = useState<ProfilePoint | null>(null);
 
-  const handleTrailChange = useCallback((trailId: string) => {
+  const handleTrailChange = useCallback((trailId: number) => {
     setSelectedTrailId(trailId);
     setWaypoints([]);
     setSelectedWaypointId(null);
@@ -80,8 +80,8 @@ export default function MountainPageClient({
     setHoveredProfilePoint(null);
   }, []);
 
-  const handleWaypointsLoaded = useCallback((wps: Waypoint[]) => {
-    setWaypoints(wps);
+  const handleWaypointsLoaded = useCallback((waypoints: Waypoint[]) => {
+    setWaypoints(waypoints);
     setSelectedWaypointId(null);
   }, []);
 
