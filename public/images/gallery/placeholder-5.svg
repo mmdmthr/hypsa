@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <rect x="160" y="590" width="880" height="180" rx="28" fill="#2e5e4e" fill-opacity="0.18"/>
+  <circle cx="300" cy="350" r="98" fill="#d8cbb8" fill-opacity="0.75"/>
+  <path d="M0 760 C220 650, 420 620, 620 710 S980 840, 1200 730 L1200 900 L0 900 Z" fill="#6fa8dc" fill-opacity="0.24"/>
+  <text x="600" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#1e293b">Lakeside camp</text>
+</svg>

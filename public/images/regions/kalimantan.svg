@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M180 720 C360 620, 500 590, 640 650 S960 770, 1030 700 L1030 760 L180 760 Z" fill="#6fa8dc" fill-opacity="0.22"/>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#1e293b">Kalimantan</text>
+</svg>

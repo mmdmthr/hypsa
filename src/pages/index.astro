@@ -2,6 +2,9 @@
 import "../styles/global.css"
 import SearchBar from '../components/SearchBar.jsx'
 import MainLayout from '../layouts/MainLayout.astro'
+import FeaturedMountains from '../components/FeaturedMountains.astro'
+import ExploreByRegion from '../components/ExploreByRegion.astro'
+import GalleryGrid from '../components/GalleryGrid.astro'
 import { getMountains } from '../api/mountains'
 import type { MountainListItem } from '../api/mountains'
 
@@ -16,4 +19,7 @@ try {
 
 <MainLayout>
   <SearchBar client:load mountains={mountains} />
+  <FeaturedMountains mountains={mountains} />
+  <ExploreByRegion mountains={mountains} />
+  <GalleryGrid />
 </MainLayout>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M0 750 C220 640, 380 620, 560 690 S960 840, 1200 710 L1200 900 L0 900 Z" fill="#2e5e4e" fill-opacity="0.22"/>
+  <path d="M0 640 C220 530, 380 500, 560 580 S960 740, 1200 620 L1200 900 L0 900 Z" fill="#6fa8dc" fill-opacity="0.24"/>
+  <circle cx="850" cy="260" r="96" fill="#d8cbb8" fill-opacity="0.75"/>
+  <path d="M120 220 L320 110 L480 220 L520 320 L300 420 L100 320 Z" fill="#1e293b" fill-opacity="0.18"/>
+  <text x="600" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" fill="#1e293b">Mountain placeholder</text>
+</svg>

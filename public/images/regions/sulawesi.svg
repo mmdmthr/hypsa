@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M320 240 L520 160 L660 240 L820 220 L940 360 L760 430 L640 620 L430 620 L280 450 Z" fill="#2e5e4e" fill-opacity="0.22"/>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#1e293b">Sulawesi</text>
+</svg>

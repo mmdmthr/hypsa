@@ -1,0 +1,53 @@
+---
+interface GalleryImage {
+  src: string;
+  alt: string;
+  aspectRatio?: string;
+}
+
+interface Props {
+  images?: GalleryImage[];
+}
+
+const { images = [
+  { src: "/images/gallery/placeholder-1.svg", alt: "Mountain ridge placeholder", aspectRatio: "aspect-[4/3]" },
+  { src: "/images/gallery/placeholder-2.svg", alt: "Volcanic crater placeholder", aspectRatio: "aspect-[3/4]" },
+  { src: "/images/gallery/placeholder-3.svg", alt: "Forest trail placeholder", aspectRatio: "aspect-[4/3]" },
+  { src: "/images/gallery/placeholder-4.svg", alt: "Sunrise over peaks placeholder", aspectRatio: "aspect-[3/2]" },
+  { src: "/images/gallery/placeholder-5.svg", alt: "Lakeside camp placeholder", aspectRatio: "aspect-[4/3]" },
+  { src: "/images/gallery/placeholder-6.svg", alt: "Cloud forest placeholder", aspectRatio: "aspect-[3/4]" },
+  { src: "/images/gallery/placeholder-7.svg", alt: "Alpine ridge placeholder", aspectRatio: "aspect-[4/3]" },
+  { src: "/images/gallery/placeholder-8.svg", alt: "Rural village placeholder", aspectRatio: "aspect-[3/2]" },
+] } = Astro.props as Props;
+---
+
+<section class="py-16 bg-surface text-ink dark:bg-ink dark:text-surface">
+  <div class="hypsa-container mx-auto">
+    <div class="max-w-3xl">
+      <p class="text-sm uppercase tracking-[0.24em] text-forest/70 dark:text-beige/70">
+        Gallery
+      </p>
+      <h2 class="mt-3 font-heading text-3xl font-semibold tracking-tight text-ink dark:text-surface sm:text-4xl">
+        Landscapes of Indonesia
+      </h2>
+      <p class="mt-4 text-base leading-8 text-ink/80 dark:text-surface/80">
+        A placeholder gallery structure for the homepage while photography is still being sourced.
+      </p>
+    </div>
+
+    <div class="mt-10 columns-1 gap-6 sm:columns-2 lg:columns-3">
+      {images.map((image) => (
+        <figure class="mb-6 break-inside-avoid overflow-hidden rounded-[1.75rem] border border-forest/10 bg-surface shadow-sm dark:border-surface/10 dark:bg-ink/80">
+          <div class={`overflow-hidden bg-beige/50 dark:bg-forest/20 ${image.aspectRatio ?? "aspect-[4/3]"}`}>
+            <img
+              src={image.src}
+              alt={image.alt}
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>

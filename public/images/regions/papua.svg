@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M220 650 L360 500 L520 560 L700 320 L940 520 L840 740 L580 760 L340 760 Z" fill="#2e5e4e" fill-opacity="0.22"/>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#1e293b">Papua</text>
+</svg>

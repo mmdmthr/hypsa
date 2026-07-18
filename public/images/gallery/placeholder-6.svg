@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <rect width="900" height="1200" fill="#f8f7f4"/>
+  <path d="M80 940 C240 800, 360 740, 450 800 S670 920, 820 820 L820 1200 L80 1200 Z" fill="#2e5e4e" fill-opacity="0.22"/>
+  <path d="M120 900 C280 760, 380 720, 470 780 S670 900, 790 840" stroke="#6fa8dc" stroke-width="22" fill="none" stroke-opacity="0.5"/>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#1e293b">Cloud forest</text>
+</svg>

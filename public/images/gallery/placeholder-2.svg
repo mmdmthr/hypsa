@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <rect width="900" height="1200" fill="#f8f7f4"/>
+  <path d="M80 870 C240 720, 320 730, 430 840 S610 980, 820 830 L820 1200 L80 1200 Z" fill="#2e5e4e" fill-opacity="0.20"/>
+  <path d="M140 860 C330 710, 420 700, 530 780 S720 940, 780 860" stroke="#6fa8dc" stroke-width="24" fill="none" stroke-opacity="0.5"/>
+  <circle cx="650" cy="320" r="104" fill="#d8cbb8" fill-opacity="0.68"/>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#1e293b">Volcanic crater</text>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M160 720 L360 580 L520 650 L700 520 L980 680 L1040 760 L160 760 Z" fill="#2e5e4e" fill-opacity="0.24"/>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#1e293b">Sumatra</text>
+</svg>

@@ -2,22 +2,13 @@ import type { ChangeEvent } from "react";
 import { useState } from "react"
 import { Search } from "lucide-react"
 import MountainCard from "./MountainCard"
+import type { MountainListItem } from "../api/mountains"
 
 // Mountains are fetched server-side in index.astro and passed as a prop.
 // This keeps the initial data fetch off the client and improves SEO/performance.
 
-type MountainSearchItem = {
-    id: string;
-    name: string;
-    slug: string;
-    elevation: number;
-    provinces: {
-        name: string;
-    } | null;
-};
-
 type SearchBarProps = {
-    mountains?: MountainSearchItem[];
+    mountains?: MountainListItem[];
 };
 
 export default function SearchBar({

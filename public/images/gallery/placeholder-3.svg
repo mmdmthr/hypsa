@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f8f7f4"/>
+  <path d="M0 720 L260 580 L420 650 L640 520 L900 680 L1200 560 L1200 900 L0 900 Z" fill="#2e5e4e" fill-opacity="0.24"/>
+  <path d="M0 780 L260 660 L420 720 L640 620 L900 760 L1200 660 L1200 900 L0 900 Z" fill="#6fa8dc" fill-opacity="0.18"/>
+  <text x="600" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#1e293b">Forest trail</text>
+</svg>
