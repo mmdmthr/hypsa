@@ -1,25 +1,60 @@
 ---
 import "../styles/global.css"
-import SearchBar from '../components/SearchBar.jsx'
+import SearchBar from '../components/SearchBar.tsx'
 import MainLayout from '../layouts/MainLayout.astro'
+import Hero from '../components/Hero.astro'
+import IntroStats from '../components/IntroStats.astro'
 import FeaturedMountains from '../components/FeaturedMountains.astro'
 import ExploreByRegion from '../components/ExploreByRegion.astro'
 import GalleryGrid from '../components/GalleryGrid.astro'
+import WhyExplore from '../components/WhyExplore.astro'
+import CTASection from '../components/CTASection.astro'
+import Footer from '../components/Footer.astro'
 import { getMountains } from '../api/mountains'
 import type { MountainListItem } from '../api/mountains'
 
-// Fetch all mountains at build time — no client-side data fetching needed
+// Fetch all mountains at build time — keep existing error-handling pattern
 let mountains: MountainListItem[] = [];
 try {
   mountains = await getMountains();
 } catch (err) {
   console.warn("[index] Could not fetch mountains from Supabase:", err);
 }
+
+// Derive stats from the single mountains array
+const mountainCount = mountains.length;
+const provinceCount = new Set(mountains.map((m) => m.provinces?.name).filter(Boolean)).size;
+const elevationDataCount = mountains.filter((m) => typeof m.elevation === "number" && !isNaN(m.elevation)).length;
+// NOTE: There is no explicit "active volcano" field on MountainListItem — cannot compute reliably here
+const activeVolcanoCount = 0;
+
+// Hero image — use existing gallery placeholder until real photography is provided
+const heroBackground = "/images/gallery/placeholder-4.svg";
 ---
 
 <MainLayout>
+  <!-- Render SearchBar once and pass mountains -->
   <SearchBar client:load mountains={mountains} />
+
+  <!-- Page sections in the order defined in the brief -->
+  <Hero backgroundImage={heroBackground} />
+
+  <IntroStats
+    mountainCount={mountainCount}
+    activeVolcanoCount={activeVolcanoCount}
+    provinceCount={provinceCount}
+    elevationDataCount={elevationDataCount}
+  />
+
   <FeaturedMountains mountains={mountains} />
+
   <ExploreByRegion mountains={mountains} />
+
   <GalleryGrid />
+
+  <WhyExplore />
+
+  <CTASection />
+
+  <Footer />
 </MainLayout>
