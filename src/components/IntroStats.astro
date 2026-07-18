@@ -1,0 +1,44 @@
+---
+interface Props {
+  mountainCount: number;
+  activeVolcanoCount: number;
+  provinceCount: number;
+  elevationDataCount: number;
+}
+
+const {
+  mountainCount,
+  activeVolcanoCount,
+  provinceCount,
+  elevationDataCount,
+} = Astro.props as Props;
+---
+
+<section class="py-16 bg-surface text-ink dark:bg-ink dark:text-surface">
+  <div class="hypsa-container mx-auto">
+    <div class="max-w-2xl">
+      <p class="text-base leading-8 text-ink dark:text-surface">
+        Indonesia lies on the Pacific Ring of Fire and is home to some of the world's most spectacular volcanic landscapes.
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-3xl border border-surface/60 bg-surface/90 px-6 py-8 shadow-sm dark:border-surface/20 dark:bg-ink/80">
+        <div class="text-3xl font-semibold text-forest dark:text-beige font-heading">{mountainCount}</div>
+        <div class="mt-2 text-sm uppercase tracking-[0.24em] text-ink/70 dark:text-surface/70">Mountains</div>
+      </div>
+      <div class="rounded-3xl border border-surface/60 bg-surface/90 px-6 py-8 shadow-sm dark:border-surface/20 dark:bg-ink/80">
+        <div class="text-3xl font-semibold text-forest dark:text-beige font-heading">{activeVolcanoCount}</div>
+        <div class="mt-2 text-sm uppercase tracking-[0.24em] text-ink/70 dark:text-surface/70">Active volcanoes</div>
+      </div>
+      <div class="rounded-3xl border border-surface/60 bg-surface/90 px-6 py-8 shadow-sm dark:border-surface/20 dark:bg-ink/80">
+        <div class="text-3xl font-semibold text-forest dark:text-beige font-heading">{provinceCount}</div>
+        <div class="mt-2 text-sm uppercase tracking-[0.24em] text-ink/70 dark:text-surface/70">Provinces covered</div>
+      </div>
+      <div class="rounded-3xl border border-surface/60 bg-surface/90 px-6 py-8 shadow-sm dark:border-surface/20 dark:bg-ink/80">
+        <div class="text-3xl font-semibold text-forest dark:text-beige font-heading">{elevationDataCount}</div>
+        <div class="mt-2 text-sm uppercase tracking-[0.24em] text-ink/70 dark:text-surface/70">Elevation data points available</div>
+      </div>
+    </div>
+  </div>
+</section>

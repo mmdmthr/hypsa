@@ -1,0 +1,48 @@
+---
+interface Props {
+  backgroundImage: string;
+}
+
+const { backgroundImage } = Astro.props as Props;
+---
+
+<section class="relative overflow-hidden bg-surface text-ink dark:bg-ink dark:text-surface">
+  <div class="absolute inset-0">
+    <img
+      src={backgroundImage}
+      alt="Mountain landscape"
+      class="h-full w-full object-cover"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50 dark:from-black/70 dark:via-black/10 dark:to-black/60"></div>
+  </div>
+
+  <div class="relative">
+    <div class="hypsa-container mx-auto flex min-h-[70vh] flex-col justify-center py-20 sm:min-h-[75vh] lg:min-h-[85vh]">
+      <div class="max-w-3xl text-center">
+        <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-surface dark:text-surface sm:text-5xl lg:text-6xl font-heading">
+          Discover the Beauty of Indonesian Mountains
+        </h1>
+        <p class="mt-5 text-base leading-8 text-surface/90 dark:text-surface/80 sm:text-lg">
+          Explore hundreds of peaks, volcanic landscapes, and breathtaking trails across the Indonesian archipelago.
+        </p>
+
+        <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <a
+            href="/mountains"
+            class="inline-flex items-center justify-center rounded-full bg-beige px-7 py-3 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-surface"
+          >
+            Explore Mountains
+          </a>
+          <a
+            href="#regions"
+            class="inline-flex items-center justify-center rounded-full border border-surface bg-transparent px-7 py-3 text-sm font-semibold text-surface transition-colors hover:bg-surface/90"
+          >
+            Browse by Region
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
