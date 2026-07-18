@@ -31,22 +31,22 @@ export default function ThemeToggle() {
     // Don't render until mounted to avoid hydration mismatch
     if (!mounted) {
         return (
-            <div className="p-2 rounded-lg bg-beige text-ink w-9 h-9" />
-        )
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-beige/70 bg-surface text-ink shadow-sm dark:border-forest/40 dark:bg-ink/80 dark:text-surface" />
+        );
     }
 
     return (
         <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-beige dark:bg-forest text-ink dark:text-surface hover:bg-sky dark:hover:bg-sky transition-colors shadow-md"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-beige/70 bg-surface text-ink shadow-sm transition hover:border-forest hover:text-forest dark:border-forest/40 dark:bg-ink/80 dark:text-surface dark:hover:border-sky dark:hover:text-sky"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             type="button"
         >
             {isDark ? (
-                <Sun className="w-5 h-5" />
+                <Sun className="h-5 w-5" />
             ) : (
-                <Moon className="w-5 h-5" />
+                <Moon className="h-5 w-5" />
             )}
         </button>
-    )
+    );
 }

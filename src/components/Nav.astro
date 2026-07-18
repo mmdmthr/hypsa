@@ -1,0 +1,46 @@
+---
+import ThemeToggle from "./ThemeToggle.jsx";
+import MobileNav from "./MobileNav.tsx";
+import SearchBar from "./SearchBar.jsx";
+
+const navLinks = [
+  { label: "Explore", href: "/explore" },
+  { label: "Mountains", href: "/mountains" },
+  { label: "Regions", href: "/regions" },
+  { label: "About", href: "/about" },
+];
+
+const searchPlaceholder = "Cari gunung atau provinsi";
+---
+
+<header class="border-b border-beige/70 bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80 dark:border-forest/40 dark:bg-ink/95">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-3 text-ink transition hover:text-forest dark:text-surface dark:hover:text-sky">
+      <span class="flex h-10 w-10 items-center justify-center rounded-full border border-beige/70 bg-beige/60 text-xl shadow-sm dark:border-forest/40 dark:bg-forest/30">🏔️</span>
+      <span class="text-lg font-semibold tracking-tight">Hypsa</span>
+    </a>
+
+    <nav class="hidden items-center gap-6 md:flex" aria-label="Primary">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class="text-sm font-medium text-ink transition hover:text-forest dark:text-surface dark:hover:text-sky"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <div>
+        <SearchBar client:load mountains={[]} />
+      </div>
+      <div class="hidden sm:block">
+        <ThemeToggle client:load />
+      </div>
+      <div class="md:hidden">
+        <MobileNav client:load links={navLinks} />
+      </div>
+    </div>
+  </div>
+</header>
