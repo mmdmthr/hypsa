@@ -31,14 +31,14 @@ export default function ThemeToggle() {
     // Don't render until mounted to avoid hydration mismatch
     if (!mounted) {
         return (
-            <div className="p-2 rounded-lg bg-teal-200 text-gray-800 w-9 h-9" />
+            <div className="p-2 rounded-lg bg-beige text-ink w-9 h-9" />
         )
     }
 
     return (
         <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-teal-200 dark:bg-teal-700 text-gray-800 dark:text-gray-200 hover:bg-teal-300 dark:hover:bg-teal-600 transition-colors shadow-md"
+            className="p-2 rounded-lg bg-beige dark:bg-forest text-ink dark:text-surface hover:bg-sky dark:hover:bg-sky transition-colors shadow-md"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             type="button"
         >

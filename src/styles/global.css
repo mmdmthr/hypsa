@@ -3,6 +3,37 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-forest: #2e5e4e;
+  --color-beige: #d8cbb8;
+  --color-sky: #6fa8dc;
+  --color-surface: #f8f7f4;
+  --color-ink: #1e293b;
+  --font-heading: 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer utilities {
+  .hypsa-container {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 1280px;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .hypsa-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hypsa-container {
+      padding-inline: 2rem;
+    }
+  }
+}
+
 /* Ensure smooth transitions for theme changes */
 *,
 *::before,
@@ -15,9 +46,13 @@
 /* Light theme (default) */
 :root {
   color-scheme: light;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
 }
 
 /* Dark theme */
 .dark {
   color-scheme: dark;
+  background-color: var(--color-ink);
+  color: var(--color-surface);
 }

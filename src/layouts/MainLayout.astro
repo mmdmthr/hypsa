@@ -32,31 +32,37 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
         />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+        />
+        <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
         />
         <title>{pageTitle}</title>
 
-        <!-- Dark mode initialization script -->
+        <!-- Theme initialization script -->
         <script is:inline>
-            // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-            document.documentElement.classList.toggle(
-                "dark",
-                localStorage.theme === "dark" ||
-                    (!("theme" in localStorage) &&
-                        window.matchMedia("(prefers-color-scheme: dark)")
-                            .matches),
-            );
+            const storedTheme = localStorage.getItem("theme");
+            const shouldUseDark = storedTheme === "dark";
+            document.documentElement.classList.toggle("dark", shouldUseDark);
         </script>
     </head>
     <body
-        class="font-sans bg-zinc-100 dark:bg-teal-950 text-gray-900 dark:text-gray-100 transition-colors"
+        class="font-sans bg-surface text-ink dark:bg-ink dark:text-surface transition-colors"
     >
         <div
             class:list={[
-                fullWidth
-                    ? "w-full"
-                    : "max-w-screen-xl mx-auto py-8 px-4 sm:px-6 lg:px-8 lg:py-8",
+                fullWidth ? "w-full" : "hypsa-container py-8 lg:py-8",
             ]}
         >
             <!-- Theme Toggle - Fixed Position Top Right -->
@@ -66,7 +72,7 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
 
             <div
                 class:list={[
-                    "min-h-screen bg-zinc-100 dark:bg-teal-950 text-gray-900 dark:text-gray-100 font-sans transition-colors",
+                    "min-h-screen bg-surface text-ink dark:bg-ink dark:text-surface font-sans transition-colors",
                     fullWidth ? "py-1" : "px-4 py-6",
                 ]}
             >
@@ -74,11 +80,11 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
                     class="max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-6 text-center"
                 >
                     <h2
-                        class="text-3xl leading-9 font-extrabold tracking-tight sm:text-4xl text-gray-900 dark:text-gray-100 mb-4"
+                        class="text-3xl leading-9 font-extrabold tracking-tight sm:text-4xl text-ink dark:text-surface mb-4 font-heading"
                     >
                         <a
                             href="/"
-                            class="hover:text-teal-300 dark:hover:text-teal-400 transition-colors"
+                            class="hover:text-forest dark:hover:text-sky transition-colors"
                         >
                             ⛰️ Gunung Nusantara
                         </a>
@@ -88,7 +94,7 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
                             <li class="inline-block mr-5">
                                 <a
                                     href="/"
-                                    class="text-gray-900 dark:text-gray-100 hover:text-zinc-600 dark:hover:text-gray-300 no-underline transition-colors"
+                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
                                 >
                                     <i class="fas fa-home"></i> Home
                                 </a>
@@ -96,7 +102,7 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
                             <li class="inline-block mr-5">
                                 <a
                                     href="/articles"
-                                    class="text-gray-900 dark:text-gray-100 hover:text-zinc-600 dark:hover:text-gray-300 no-underline transition-colors"
+                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
                                 >
                                     <i class="fas fa-clipboard-list"></i> Artikel
                                 </a>
@@ -105,7 +111,7 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
                                 <a
                                     href="https://github.com/mmdmthr/hypsa"
                                     target="_blank"
-                                    class="text-gray-900 dark:text-gray-100 hover:text-zinc-600 dark:hover:text-gray-300 no-underline transition-colors"
+                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
                                 >
                                     <i class="fab fa-github"></i> GitHub
                                 </a>
