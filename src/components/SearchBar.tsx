@@ -71,7 +71,7 @@ export default function SearchBar({
                         <Search className="h-5 w-5" />
                     </span>
                     <span className="text-sm font-medium text-ink/80 dark:text-surface/90">
-                        Cari nama gunung atau provinsi...
+                        Find mountains or provinces...
                     </span>
                 </span>
                 <span className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/60 dark:text-surface/70">
@@ -97,7 +97,7 @@ export default function SearchBar({
                             <input
                                 ref={inputRef}
                                 type="search"
-                                placeholder="Cari nama gunung atau provinsi..."
+                                placeholder="Find mountains or provinces..."
                                 value={search}
                                 onChange={handleSearch}
                                 className="w-full border-none bg-transparent text-sm text-ink outline-none placeholder:text-ink/60 dark:text-surface dark:placeholder:text-surface/60"
@@ -114,7 +114,10 @@ export default function SearchBar({
 
                         <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
                             {displayed.map((m) => (
-                                <MountainCard key={m.id} mountain={m} />
+                                <MountainCard key={m.id} mountain={{
+                                    ...m,
+                                    imageUrl: `/images/gallery/mountains/${m.slug}.jpeg`,
+                                }} />
                             ))}
                         </div>
 

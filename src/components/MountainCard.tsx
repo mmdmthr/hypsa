@@ -10,11 +10,11 @@ type MountainCardProps = {
 };
 
 export default function MountainCard({ mountain }: MountainCardProps) {
-  const provinceName = mountain.provinces?.name ?? "Province belum tersedia";
+  const provinceName = mountain.provinces?.name ?? "Province not available";
   const elevation = Number(mountain.elevation).toLocaleString("id-ID");
   const description =
     mountain.description?.trim() ||
-    "Deskripsi singkat belum tersedia dari sumber data.";
+    "Short description not available from the data source.";
   const imageUrl = mountain.imageUrl?.trim();
 
   return (
