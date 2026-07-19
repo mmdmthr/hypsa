@@ -1,9 +1,10 @@
 ---
 import "../styles/global.css";
-import ThemeToggle from "../components/ThemeToggle.jsx";
+import Nav from "../components/Nav.astro";
 
 interface Props {
     fullWidth?: boolean;
+    navVariant?: "solid" | "overlay";
     title?: string;
     description?: string;
     canonicalURL?: string;
@@ -11,6 +12,7 @@ interface Props {
 
 const {
     fullWidth = false,
+    navVariant = "solid",
     title,
     description,
     canonicalURL,
@@ -58,72 +60,24 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
         </script>
     </head>
     <body
-        class="font-sans bg-surface text-ink dark:bg-ink dark:text-surface transition-colors"
+        class="relative font-sans bg-surface text-ink dark:bg-ink dark:text-surface transition-colors"
     >
+        <Nav variant={navVariant} />
         <div
             class:list={[
-                fullWidth ? "w-full" : "hypsa-container py-8 lg:py-8",
+                fullWidth ? "w-full" : "hypsa-container",
             ]}
         >
-            <!-- Theme Toggle - Fixed Position Top Right -->
-            <div class="fixed top-4 right-4 z-50">
-                <ThemeToggle client:load />
-            </div>
-
             <div
                 class:list={[
                     "min-h-screen bg-surface text-ink dark:bg-ink dark:text-surface font-sans transition-colors",
-                    fullWidth ? "py-1" : "px-4 py-6",
                 ]}
             >
-                <div
-                    class="max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-6 text-center"
-                >
-                    <h2
-                        class="text-3xl leading-9 font-extrabold tracking-tight sm:text-4xl text-ink dark:text-surface mb-4 font-heading"
-                    >
-                        <a
-                            href="/"
-                            class="hover:text-forest dark:hover:text-sky transition-colors"
-                        >
-                            ⛰️ Gunung Nusantara
-                        </a>
-                    </h2>
-                    <nav class="text-center p-4">
-                        <ul class="list-none m-0 p-0">
-                            <li class="inline-block mr-5">
-                                <a
-                                    href="/"
-                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
-                                >
-                                    <i class="fas fa-home"></i> Home
-                                </a>
-                            </li>
-                            <li class="inline-block mr-5">
-                                <a
-                                    href="/articles"
-                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
-                                >
-                                    <i class="fas fa-clipboard-list"></i> Artikel
-                                </a>
-                            </li>
-                            <li class="inline-block">
-                                <a
-                                    href="https://github.com/mmdmthr/hypsa"
-                                    target="_blank"
-                                    class="text-ink dark:text-surface hover:text-forest dark:hover:text-sky no-underline transition-colors"
-                                >
-                                    <i class="fab fa-github"></i> GitHub
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
                 {
                     fullWidth ? (
                         <slot />
                     ) : (
-                        <div class="max-w-2xl w-full mx-auto px-4 sm:px-6">
+                        <div class="max-w-6xl w-full mx-auto px-4 sm:px-6">
                             <slot />
                         </div>
                     )

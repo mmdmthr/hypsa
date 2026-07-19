@@ -1,40 +1,67 @@
 ---
 import ThemeToggle from "./ThemeToggle.jsx";
 import MobileNav from "./MobileNav.tsx";
-import SearchBar from "./SearchBar.jsx";
+
+interface Props {
+  variant?: "solid" | "overlay";
+}
+
+const { variant = "solid" } = Astro.props as Props;
+const isOverlay = variant === "overlay";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "Mountains", href: "/mountains" },
   { label: "Regions", href: "/regions" },
   { label: "About", href: "/about" },
+  { label: "Articles", href: "/articles" },
+  { label: "GitHub", href: "https://github.com/mmdmthr/hypsa", external: true },
 ];
-
-const searchPlaceholder = "Cari gunung atau provinsi";
 ---
 
-<header class="border-b border-beige/70 bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80 dark:border-forest/40 dark:bg-ink/95">
-  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-    <a href="/" class="flex items-center gap-3 text-ink transition hover:text-forest dark:text-surface dark:hover:text-sky">
-      <span class="flex h-10 w-10 items-center justify-center rounded-full border border-beige/70 bg-beige/60 text-xl shadow-sm dark:border-forest/40 dark:bg-forest/30">🏔️</span>
+<header class:list={["w-full", isOverlay ? "absolute inset-x-0 top-0 z-40" : "relative z-30"]}>
+  <div class:list={["hypsa-container mx-auto flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8", isOverlay ? "pt-4 sm:pt-6 lg:pt-8" : ""]}>
+    <a
+      href="/"
+      class:list={[
+        "flex items-center gap-3 transition",
+        isOverlay
+          ? "text-surface hover:text-surface/80"
+          : "text-ink hover:text-ink/80 dark:text-surface dark:hover:text-surface/80",
+      ]}
+    >
+      <span
+        class:list={[
+          "flex h-10 w-10 items-center justify-center rounded-full border text-xl shadow-sm backdrop-blur-sm",
+          isOverlay
+            ? "border-white/30 bg-white/15 text-surface"
+            : "border-forest/20 bg-surface/80 text-ink dark:border-surface/20 dark:bg-ink/80 dark:text-surface",
+        ]}
+      >
+        🏔️
+      </span>
       <span class="text-lg font-semibold tracking-tight">Hypsa</span>
     </a>
 
-    <nav class="hidden items-center gap-6 md:flex" aria-label="Primary">
-      {navLinks.map((link) => (
-        <a
-          href={link.href}
-          class="text-sm font-medium text-ink transition hover:text-forest dark:text-surface dark:hover:text-sky"
-        >
-          {link.label}
-        </a>
-      ))}
-    </nav>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <nav class="hidden items-center gap-5 md:flex" aria-label="Primary">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noopener noreferrer" : undefined}
+            class:list={[
+              "text-sm font-medium transition",
+              isOverlay
+                ? "text-surface/95 hover:text-surface"
+                : "text-ink/90 hover:text-ink dark:text-surface/95 dark:hover:text-surface",
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
 
-    <div class="flex items-center gap-2">
-      <div>
-        <SearchBar client:load mountains={[]} />
-      </div>
       <div class="hidden sm:block">
         <ThemeToggle client:load />
       </div>

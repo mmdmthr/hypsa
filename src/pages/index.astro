@@ -1,6 +1,5 @@
 ---
 import "../styles/global.css"
-import SearchBar from '../components/SearchBar.tsx'
 import MainLayout from '../layouts/MainLayout.astro'
 import Hero from '../components/Hero.astro'
 import IntroStats from '../components/IntroStats.astro'
@@ -32,12 +31,9 @@ const activeVolcanoCount = 0;
 const heroBackground = "/images/gallery/placeholder-4.svg";
 ---
 
-<MainLayout>
-  <!-- Render SearchBar once and pass mountains -->
-  <SearchBar client:load mountains={mountains} />
-
+<MainLayout navVariant="overlay">
   <!-- Page sections in the order defined in the brief -->
-  <Hero backgroundImage={heroBackground} />
+  <Hero backgroundImage={heroBackground} mountains={mountains} />
 
   <IntroStats
     mountainCount={mountainCount}

@@ -1,12 +1,16 @@
 ---
+import SearchBar from "./SearchBar.tsx";
+import type { MountainListItem } from "../api/mountains";
+
 interface Props {
   backgroundImage: string;
+  mountains?: MountainListItem[];
 }
 
-const { backgroundImage } = Astro.props as Props;
+const { backgroundImage, mountains = [] } = Astro.props as Props;
 ---
 
-<section class="relative overflow-hidden bg-surface text-ink dark:bg-ink dark:text-surface">
+<section class="relative isolate left-1/2 right-1/2 -mx-[50vw] w-screen overflow-hidden bg-surface text-ink dark:bg-ink dark:text-surface">
   <div class="absolute inset-0">
     <img
       src={backgroundImage}
@@ -15,20 +19,24 @@ const { backgroundImage } = Astro.props as Props;
       loading="eager"
       fetchpriority="high"
     />
-    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50 dark:from-black/70 dark:via-black/10 dark:to-black/60"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/60 dark:from-black/70 dark:via-black/10 dark:to-black/70"></div>
   </div>
 
-  <div class="relative">
-    <div class="hypsa-container mx-auto flex min-h-[70vh] flex-col justify-center py-20 sm:min-h-[75vh] lg:min-h-[85vh]">
-      <div class="max-w-3xl text-center">
-        <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-surface dark:text-surface sm:text-5xl lg:text-6xl font-heading">
+  <div class="relative z-10 flex min-h-[78vh] flex-col justify-start pt-5 sm:min-h-[82vh] sm:pt-6 lg:min-h-[90vh] lg:pt-8">
+    <div class="hypsa-container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
+      <div class="mx-auto flex max-w-3xl flex-col items-center text-center">
+        <h1 class="font-heading text-4xl font-extrabold leading-tight tracking-tight text-surface sm:text-5xl lg:text-6xl">
           Discover the Beauty of Indonesian Mountains
         </h1>
-        <p class="mt-5 text-base leading-8 text-surface/90 dark:text-surface/80 sm:text-lg">
+        <p class="mt-5 text-base leading-8 text-surface/90 sm:text-lg">
           Explore hundreds of peaks, volcanic landscapes, and breathtaking trails across the Indonesian archipelago.
         </p>
 
-        <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <div class="mt-8 w-full max-w-2xl">
+          <SearchBar client:load mountains={mountains} />
+        </div>
+
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <a
             href="/mountains"
             class="inline-flex items-center justify-center rounded-full bg-beige px-7 py-3 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-surface"
@@ -37,7 +45,7 @@ const { backgroundImage } = Astro.props as Props;
           </a>
           <a
             href="#regions"
-            class="inline-flex items-center justify-center rounded-full border border-surface bg-transparent px-7 py-3 text-sm font-semibold text-surface transition-colors hover:bg-surface/90"
+            class="inline-flex items-center justify-center rounded-full border border-surface/70 bg-transparent px-7 py-3 text-sm font-semibold text-surface transition-colors hover:bg-surface/90"
           >
             Browse by Region
           </a>

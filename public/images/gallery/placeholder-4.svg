@@ -1,7 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
   <rect width="1200" height="800" fill="#f8f7f4"/>
-  <circle cx="860" cy="260" r="120" fill="#d8cbb8" fill-opacity="0.72"/>
   <path d="M0 620 C220 500, 420 470, 620 560 S980 710, 1200 590 L1200 800 L0 800 Z" fill="#2e5e4e" fill-opacity="0.22"/>
   <path d="M0 700 C220 590, 420 560, 620 630 S980 760, 1200 660" stroke="#6fa8dc" stroke-width="18" fill="none" stroke-opacity="0.55"/>
-  <text x="600" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#1e293b">Sunrise over peaks</text>
 </svg>

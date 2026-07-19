@@ -61,12 +61,22 @@ export default function SearchBar({
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-beige/70 bg-surface text-ink shadow-sm transition hover:border-forest hover:text-forest dark:border-forest/40 dark:bg-ink/80 dark:text-surface dark:hover:border-sky dark:hover:text-sky"
+                className="flex w-full items-center justify-between rounded-full border border-white/30 bg-white/90 px-4 py-3 text-left text-ink shadow-lg shadow-black/10 transition hover:border-surface hover:bg-white/95 dark:border-forest/40 dark:bg-ink/80 dark:text-surface dark:hover:border-sky"
                 aria-label="Open mountain search"
                 aria-haspopup="dialog"
                 aria-controls="mountain-search-dialog"
             >
-                <Search className="h-5 w-5" />
+                <span className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-beige/70 text-ink dark:bg-forest/30 dark:text-surface">
+                        <Search className="h-5 w-5" />
+                    </span>
+                    <span className="text-sm font-medium text-ink/80 dark:text-surface/90">
+                        Cari nama gunung atau provinsi...
+                    </span>
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/60 dark:text-surface/70">
+                    Search
+                </span>
             </button>
 
             {isOpen && (
