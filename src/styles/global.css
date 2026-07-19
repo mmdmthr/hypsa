@@ -34,13 +34,35 @@
   }
 }
 
-/* Ensure smooth transitions for theme changes */
-*,
-*::before,
-*::after {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+@layer base {
+  html.theme-ready :where(
+    body,
+    header,
+    nav,
+    footer,
+    main,
+    section,
+    article,
+    aside,
+    div,
+    button,
+    a,
+    input,
+    textarea,
+    select,
+    p,
+    span,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    svg
+  ):not([class*='transition']) {
+    @apply transition-colors duration-300 ease-in-out;
+  }
 }
 
 /* Light theme (default) */

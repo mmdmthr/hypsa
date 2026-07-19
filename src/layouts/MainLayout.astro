@@ -57,6 +57,7 @@ const pageDescription = description ?? "Nama-nama gunung di Indonesia, lokasi da
             const storedTheme = localStorage.getItem("theme");
             const shouldUseDark = storedTheme === "dark";
             document.documentElement.classList.toggle("dark", shouldUseDark);
+            document.documentElement.classList.add("theme-ready");
         </script>
     </head>
     <body
