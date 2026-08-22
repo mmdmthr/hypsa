@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import MountainViewer from "./MountainViewer";
 import WaypointTimeline from "./WaypointTimeline";
 import TrailSelector from "./TrailSelector";
-import TrailInfoCard from "./TrailInfoCard";
 import ElevationProfile from "./ElevationProfile";
 import type { Waypoint } from "../api/waypoints";
 import { supabase } from "../lib/supabase";
@@ -214,7 +213,6 @@ export default function MountainPageClient({
             selectedTrailId={selectedTrailId}
             onTrailChange={handleTrailChange}
           />
-          <TrailInfoCard trail={selectedTrail} />
           <WaypointTimeline
             waypoints={waypoints}
             selectedWaypointId={selectedWaypointId}
