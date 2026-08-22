@@ -42,7 +42,7 @@ export default function WaypointTimeline({
       )}
 
       {!isLoading && waypoints.length > 0 && (
-        <div className="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-1 max-h-full overflow-y-auto pr-1">
           {waypoints.map((wp) => {
             const isSelected = selectedWaypointId === wp.id;
             const isHovered = hoveredWaypointId === wp.id;
